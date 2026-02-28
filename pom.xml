@@ -77,6 +77,14 @@
                             <mainClass>com.syntilio.scaip.client.ScaipClientMain</mainClass>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>run-benchmark</id>
+                        <phase>none</phase>
+                        <goals><goal>java</goal></goals>
+                        <configuration>
+                            <mainClass>com.syntilio.scaip.client.ScaipClientBenchmark</mainClass>
+                        </configuration>
+                    </execution>
                 </executions>
                 <configuration>
                     <mainClass>com.syntilio.scaip.server.Main</mainClass>
