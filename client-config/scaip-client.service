@@ -1,0 +1,15 @@
+[Unit]
+Description=SCAIP Remote Client (run once at boot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=scaip
+Group=scaip
+WorkingDirectory=/opt/scaip/runtime
+EnvironmentFile=-/etc/scaip-client/client.env
+ExecStart=/usr/bin/java -cp /opt/scaip/runtime/app.jar com.syntilio.scaip.ScaipClientMain
+
+[Install]
+WantedBy=multi-user.target
