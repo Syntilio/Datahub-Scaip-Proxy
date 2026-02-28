@@ -49,12 +49,8 @@ runcmd:
   - ufw allow OpenSSH
   - ufw allow 80/tcp
   - ufw allow 443/tcp
-  - ufw allow 5060/tcp
-  - ufw allow 5060/udp
+  # Only TLS (5061) is public; backends 5062–5064 are behind Kamailio on localhost
   - ufw allow 5061/tcp
-  - ufw allow 5061/udp
-  - ufw allow 5062/tcp
-  - ufw allow 5062/udp
   - ufw --force enable
   - mkdir -p /opt
   - cd /opt

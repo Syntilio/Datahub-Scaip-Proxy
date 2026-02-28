@@ -20,8 +20,8 @@ echo "Configuring firewall..."
 ufw allow OpenSSH
 ufw allow 80/tcp
 ufw allow 443/tcp
+# Only TLS (5061) is public; backends 5062–5064 are behind Kamailio on localhost
 ufw allow 5061/tcp
-ufw allow 5062/tcp
 ufw --force enable
 
 echo "Building SCAIP project..."
@@ -43,12 +43,14 @@ cp "$JAR" /opt/scaip/runtime/app.jar
 # So that User=scaip can run the service and write logs in /home/scaip
 chown -R scaip:scaip /opt/scaip/runtime
 
-echo "Installing systemd service..."
-cp server-config/scaip.service /etc/systemd/system/scaip.service
-
+echo "Installing systemd service (three backends on 5062, 5063, 5064)..."
+cp server-config/scaip@.service /etc/systemd/system/scaip@.service
 systemctl daemon-reload
-systemctl enable scaip
-systemctl start scaip
+# Replace single-instance scaip if it was previously installed
+systemctl stop scaip 2>/dev/null || true
+systemctl disable scaip 2>/dev/null || true
+systemctl enable scaip@5062 scaip@5063 scaip@5064
+systemctl start scaip@5062 scaip@5063 scaip@5064
 
 echo "Setting up TLS (Let's Encrypt or self-signed fallback)..."
 mkdir -p /etc/kamailio/certs

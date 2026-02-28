@@ -1,0 +1,16 @@
+[Unit]
+Description=SCAIP Backend (port %i)
+After=network.target
+
+[Service]
+User=scaip
+Group=scaip
+WorkingDirectory=/opt/scaip/runtime
+Environment=SCAIP_HOST=0.0.0.0
+Environment=SCAIP_PORT=%i
+ExecStart=/usr/bin/java -jar /opt/scaip/runtime/app.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

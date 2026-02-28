@@ -43,7 +43,8 @@ public class ScaipClient implements SipListener {
         sipFactory.setPathName("gov.nist");
 
         Properties props = new Properties();
-        props.setProperty("javax.sip.STACK_NAME", "scaip-client");
+        // Unique name per client so concurrent threads each have their own stack
+        props.setProperty("javax.sip.STACK_NAME", "scaip-client-" + clientHost + "-" + clientPort);
         props.setProperty("javax.sip.IP_ADDRESS", clientHost);
 
         sipStack = sipFactory.createSipStack(props);
