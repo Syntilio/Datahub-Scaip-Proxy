@@ -8,7 +8,7 @@ package_upgrade: true
 
 packages:
   - git
-  - openjdk-23-jdk
+  - openjdk-17-jdk
   - maven
   - kamailio
   - kamailio-tls-modules
@@ -59,4 +59,8 @@ runcmd:
   - cd /opt
   - git clone https://github.com/j-a-a-p/scaip.git
   - chmod +x /opt/scaip/server-config/bootstrap.sh
-  - /opt/scaip/server-config/bootstrap.sh
+  - /opt/scaip/server-config/bootstrap.sh 2>&1 | tee /var/log/scaip-bootstrap.log
+  - mkdir -p /root/scaip-install-logs
+  - cp /var/log/scaip-bootstrap.log /root/scaip-install-logs/ 2>/dev/null || true
+  - cp /var/log/cloud-init-output.log /root/scaip-install-logs/ 2>/dev/null || true
+  - cp /var/log/cloud-init.log /root/scaip-install-logs/ 2>/dev/null || true
