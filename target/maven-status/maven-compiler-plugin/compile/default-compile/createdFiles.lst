@@ -1,8 +1,2 @@
-com/syntilio/scaip/ScaipXml$ParseResult.class
-com/syntilio/scaip/ScaipClient.class
-com/syntilio/scaip/ScaipSipServer.class
 com/syntilio/scaip/ScaipXml.class
-com/syntilio/scaip/ScaipClientMain.class
-com/syntilio/scaip/Main.class
-com/syntilio/scaip/ScaipSipListener.class
-com/syntilio/scaip/LogService.class
+com/syntilio/scaip/ScaipXml$ParseResult.class

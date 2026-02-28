@@ -117,6 +117,7 @@ fi
 systemctl start apache2 2>/dev/null || true
 
 cp server-config/kamailio.cfg /etc/kamailio/kamailio.cfg
+cp server-config/dispatcher.list /etc/kamailio/dispatcher.list
 
 # So systemd tracks Kamailio after it daemonizes (Type=forking + PIDFile)
 mkdir -p /etc/systemd/system/kamailio.service.d

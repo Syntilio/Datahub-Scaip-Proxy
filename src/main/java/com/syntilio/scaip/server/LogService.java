@@ -1,5 +1,6 @@
-package com.syntilio.scaip;
+package com.syntilio.scaip.server;
 
+import com.syntilio.scaip.ScaipXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,8 @@ public class LogService {
     }
 
     public void logEvent(ScaipXml.ParseResult event) {
-        logger.info("SCAIP event: controllerId={} deviceId={} deviceType={} statusCode={} location={} priority={}",
-            event.getControllerId(), event.getDeviceId(), event.getDeviceType(), event.getStatusCode(),
-            event.getLocation(), event.getPriority());
+        logger.info("SCAIP event: ref={} cid={} did={} dty={} stc={} lco={} lte={} pri={}",
+            event.getRef(), event.getControllerId(), event.getDeviceId(), event.getDeviceType(), event.getStatusCode(),
+            event.getLocationCode(), event.getLocationText(), event.getPriority());
     }
 }

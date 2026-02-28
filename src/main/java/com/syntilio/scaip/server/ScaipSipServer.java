@@ -1,4 +1,4 @@
-package com.syntilio.scaip;
+package com.syntilio.scaip.server;
 
 import javax.sip.*;
 import javax.sip.header.HeaderFactory;

@@ -1,0 +1,7 @@
+# SCAIP backend set (setid=1). Add one line per backend for load balancing.
+# Format: setid destination flags priority
+# Algorithm 0 = round-robin. Lower priority = preferred when using priority-based selection.
+1 sip:127.0.0.1:5062 0 0
+# Example second backend (uncomment and adjust for multiple instances):
+# 1 sip:127.0.0.1:5063 0 0
+# 1 sip:10.0.0.2:5062 0 0

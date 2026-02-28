@@ -1,4 +1,7 @@
-package com.syntilio.scaip;
+package com.syntilio.scaip.server;
+
+import com.syntilio.scaip.ScaipXml;
+import com.syntilio.scaip.enums.StatusNumber;
 
 import javax.sip.*;
 import javax.sip.header.ContentTypeHeader;
@@ -35,14 +38,15 @@ public class ScaipSipListener implements SipListener {
         String responseBody;
         String contentType = getRequestContentType(request);
         if (!ScaipXml.CONTENT_TYPE.equalsIgnoreCase(contentType != null ? contentType.trim() : "")) {
-            responseBody = ScaipXml.buildNack("Content-Type must be application/xml");
+            responseBody = ScaipXml.buildNack(null, StatusNumber.INVALID_FORMAT, "Content-Type must be application/xml");
         } else {
             ScaipXml.ParseResult parsed = ScaipXml.parseRequest(body);
+            String ref = parsed.isOk() ? parsed.getRef() : ScaipXml.getRefFromRequestBody(body);
             if (parsed.isOk()) {
                 logService.logEvent(parsed);
-                responseBody = ScaipXml.buildAck();
+                responseBody = ScaipXml.buildAck(ref);
             } else {
-                responseBody = ScaipXml.buildNack(parsed.getReason());
+                responseBody = ScaipXml.buildNack(ref, StatusNumber.MANDATORY_TAG_MISSING, parsed.getReason());
             }
         }
 

@@ -1,4 +1,6 @@
-package com.syntilio.scaip;
+package com.syntilio.scaip.client;
+
+import com.syntilio.scaip.ScaipXml;
 
 import javax.sip.*;
 import javax.sip.address.*;

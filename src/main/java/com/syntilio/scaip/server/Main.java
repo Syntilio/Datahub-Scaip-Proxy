@@ -1,4 +1,4 @@
-package com.syntilio.scaip;
+package com.syntilio.scaip.server;
 
 public class Main {
     public static void main(String[] args) throws Exception {
