@@ -2,6 +2,7 @@
 set -e
 
 DOMAIN="scaip.syntilio.com"
+LETSENCRYPT_EMAIL="it@syntilio.com"
 BACKEND_PORT=5062
 SIP_TLS_PORT=5061
 APP_DIR="/opt/scaip"
@@ -49,16 +50,42 @@ systemctl daemon-reload
 systemctl enable scaip
 systemctl start scaip
 
-echo "Creating temporary self-signed TLS certificate..."
+echo "Setting up TLS (Let's Encrypt or self-signed fallback)..."
 mkdir -p /etc/kamailio/certs
 
-openssl req -x509 -nodes -days 30 \
-  -newkey rsa:2048 \
-  -keyout /etc/kamailio/certs/self.key \
-  -out /etc/kamailio/certs/self.crt \
-  -subj "/CN=$DOMAIN"
+# Try Let's Encrypt (requires DNS for $DOMAIN to point to this server's fixed IP)
+systemctl stop apache2 2>/dev/null || true
+if certbot certonly --standalone \
+  --agree-tos \
+  --non-interactive \
+  -m "$LETSENCRYPT_EMAIL" \
+  -d "$DOMAIN"; then
+  echo "Let's Encrypt certificate obtained for $DOMAIN"
+  cat > /etc/kamailio/tls.cfg <<EOF
+[server:default]
+method = TLSv1.2
+verify_certificate = no
+require_certificate = no
+private_key = /etc/letsencrypt/live/$DOMAIN/privkey.pem
+certificate = /etc/letsencrypt/live/$DOMAIN/fullchain.pem
+EOF
+  mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+  cat > /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh <<'HOOK'
+#!/bin/bash
+systemctl restart kamailio
+HOOK
+  chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
+else
+  echo "Let's Encrypt failed (check DNS points $DOMAIN to this host). Using self-signed certificate."
+  openssl req -x509 -nodes -days 30 \
+    -newkey rsa:2048 \
+    -keyout /etc/kamailio/certs/self.key \
+    -out /etc/kamailio/certs/self.crt \
+    -subj "/CN=$DOMAIN"
+  cp server-config/tls-selfsigned.cfg /etc/kamailio/tls.cfg
+fi
+systemctl start apache2 2>/dev/null || true
 
-cp server-config/tls-selfsigned.cfg /etc/kamailio/tls.cfg
 cp server-config/kamailio.cfg /etc/kamailio/kamailio.cfg
 
 systemctl restart kamailio
