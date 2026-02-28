@@ -5,11 +5,12 @@
         </encoder>
     </appender>
 
+    <!-- Log in user's home so scaip (or any user) can write without /var/log access -->
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>/var/log/scaip.log</file>
+        <file>${user.home}/scaip.log</file>
 
         <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>/var/log/scaip.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <fileNamePattern>${user.home}/scaip.%d{yyyy-MM-dd}.log</fileNamePattern>
             <maxHistory>30</maxHistory>
         </rollingPolicy>
 

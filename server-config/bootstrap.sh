@@ -39,6 +39,8 @@ fi
 
 mkdir -p /opt/scaip/runtime
 cp "$JAR" /opt/scaip/runtime/app.jar
+# So that User=scaip can run the service and write logs in /home/scaip
+chown -R scaip:scaip /opt/scaip/runtime
 
 echo "Installing systemd service..."
 cp server-config/scaip.service /etc/systemd/system/scaip.service

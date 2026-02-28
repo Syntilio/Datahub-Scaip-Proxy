@@ -2,7 +2,6 @@ package com.syntilio.scaip;
 
 public class Main {
     public static void main(String[] args) throws Exception {
-
         String host = System.getenv().getOrDefault("SCAIP_HOST", "127.0.0.1");
         int port = Integer.parseInt(
             System.getenv().getOrDefault("SCAIP_PORT", "5062")
