@@ -1,0 +1,12 @@
+[Unit]
+Description=SCAIP Backend
+After=network.target
+
+[Service]
+WorkingDirectory=/opt/scaip/runtime
+ExecStart=/usr/bin/java -jar /opt/scaip/runtime/app.jar
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
