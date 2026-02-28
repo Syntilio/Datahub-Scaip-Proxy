@@ -24,6 +24,10 @@ public class ScaipSipServer {
         Properties props = new Properties();
         props.setProperty("javax.sip.STACK_NAME", "scaip");
         props.setProperty("javax.sip.IP_ADDRESS", host);
+        int workers = Integer.parseInt(
+            System.getenv().getOrDefault("SCAIP_WORKERS", "10")
+        );
+        props.setProperty("gov.nist.javax.sip.THREAD_POOL_SIZE", String.valueOf(workers));
 
         sipStack = sipFactory.createSipStack(props);
         sipStack.start();

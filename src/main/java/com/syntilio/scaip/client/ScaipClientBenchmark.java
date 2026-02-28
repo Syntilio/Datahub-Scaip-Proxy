@@ -21,8 +21,8 @@ import java.util.concurrent.atomic.AtomicInteger;
  */
 public class ScaipClientBenchmark {
 
-    private static final int DEFAULT_RUNS = 100;
-    private static final int DEFAULT_THREADS = 3;
+    private static final int DEFAULT_RUNS = 50;
+    private static final int DEFAULT_THREADS = 1;
     private static final int PROGRESS_EVERY = 5;
     private static final int BASE_CLIENT_PORT = 5063;
 
@@ -106,6 +106,7 @@ public class ScaipClientBenchmark {
             System.out.println("Timeouts/err: " + errors.get());
         }
         System.out.println("----------------------------");
+        System.exit(0);
     }
 
     private static String buildAlarm() {

@@ -11,8 +11,9 @@ import java.util.*;
 import java.util.concurrent.*;
 
 /**
- * SCAIP client that connects to the SCAIP SIP backend (no TLS) and sends
- * SIP MESSAGE requests with SCAIP message bodies.
+ * SCAIP client that connects to the SCAIP SIP backend over UDP or TCP
+ * and sends SIP MESSAGE requests with SCAIP message bodies.
+ * For TLS to a remote server, use stunnel (see run-remote-client.sh).
  */
 public class ScaipClient implements SipListener {
 
@@ -43,7 +44,6 @@ public class ScaipClient implements SipListener {
         sipFactory.setPathName("gov.nist");
 
         Properties props = new Properties();
-        // Unique name per client so concurrent threads each have their own stack
         props.setProperty("javax.sip.STACK_NAME", "scaip-client-" + clientHost + "-" + clientPort);
         props.setProperty("javax.sip.IP_ADDRESS", clientHost);
 

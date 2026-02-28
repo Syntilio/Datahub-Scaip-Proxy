@@ -16,14 +16,6 @@ log_capture() {
 }
 log_capture
 
-echo "Configuring firewall..."
-ufw allow OpenSSH
-ufw allow 80/tcp
-ufw allow 443/tcp
-# Only TLS (5061) is public; backends 5062–5064 are behind Kamailio on localhost
-ufw allow 5061/tcp
-ufw --force enable
-
 echo "Building SCAIP project..."
 cd $APP_DIR
 mvn clean package -DskipTests
@@ -43,14 +35,14 @@ cp "$JAR" /opt/scaip/runtime/app.jar
 # So that User=scaip can run the service and write logs in /home/scaip
 chown -R scaip:scaip /opt/scaip/runtime
 
-echo "Installing systemd service (three backends on 5062, 5063, 5064)..."
+echo "Installing systemd service (10 backends on 5062–5071)..."
 cp server-config/scaip@.service /etc/systemd/system/scaip@.service
 systemctl daemon-reload
 # Replace single-instance scaip if it was previously installed
 systemctl stop scaip 2>/dev/null || true
 systemctl disable scaip 2>/dev/null || true
-systemctl enable scaip@5062 scaip@5063 scaip@5064
-systemctl start scaip@5062 scaip@5063 scaip@5064
+systemctl enable scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066 scaip@5067 scaip@5068 scaip@5069 scaip@5070 scaip@5071
+systemctl start scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066 scaip@5067 scaip@5068 scaip@5069 scaip@5070 scaip@5071
 
 echo "Setting up TLS (Let's Encrypt or self-signed fallback)..."
 mkdir -p /etc/kamailio/certs
@@ -74,39 +66,17 @@ if certbot certonly --standalone \
   chown kamailio:kamailio /etc/kamailio/certs/fullchain.pem /etc/kamailio/certs/privkey.pem
   chmod 644 /etc/kamailio/certs/fullchain.pem
   chmod 640 /etc/kamailio/certs/privkey.pem
-  cat > /etc/kamailio/tls.cfg <<EOF
-[server:default]
-method = TLSv1.2
-verify_certificate = no
-require_certificate = no
-private_key = /etc/kamailio/certs/privkey.pem
-certificate = /etc/kamailio/certs/fullchain.pem
-EOF
+  cp server-config/tls-letsencrypt.cfg /etc/kamailio/tls.cfg
   mkdir -p /etc/letsencrypt/renewal-hooks/deploy
-  cat > /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh <<HOOK
-#!/bin/bash
-# Copy renewed certs so kamailio can read them, then restart (CERTBOT_DOMAIN set by certbot)
-D=\${CERTBOT_DOMAIN:-$DOMAIN}
-cp "/etc/letsencrypt/live/\$D/fullchain.pem" /etc/kamailio/certs/
-cp "/etc/letsencrypt/live/\$D/privkey.pem" /etc/kamailio/certs/
-chown kamailio:kamailio /etc/kamailio/certs/fullchain.pem /etc/kamailio/certs/privkey.pem
-chmod 644 /etc/kamailio/certs/fullchain.pem
-chmod 640 /etc/kamailio/certs/privkey.pem
-systemctl restart kamailio
-HOOK
+  sed "s/__DOMAIN__/$DOMAIN/g" server-config/letsencrypt-restart-kamailio.sh > /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
   chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
   # Configure Apache for HTTPS and set global ServerName (suppresses AH00558)
   a2enmod ssl 2>/dev/null || true
-  echo "ServerName $DOMAIN" > /etc/apache2/conf-available/syntilio.conf
+  printf '%s\n' "ServerName $DOMAIN" > /etc/apache2/conf-available/syntilio.conf
   a2enconf syntilio 2>/dev/null || true
   sed "s/__DOMAIN__/$DOMAIN/g" server-config/apache-scaip-ssl.conf > /etc/apache2/sites-available/scaip-ssl.conf
   a2ensite scaip-ssl.conf 2>/dev/null || true
   systemctl reload apache2 2>/dev/null || true
-  # Reload Apache on cert renewal
-  cat >> /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh <<'HOOK'
-
-systemctl reload apache2
-HOOK
 else
   echo "Let's Encrypt failed (check DNS points $DOMAIN to this host). Using self-signed certificate."
   openssl req -x509 -nodes -days 30 \

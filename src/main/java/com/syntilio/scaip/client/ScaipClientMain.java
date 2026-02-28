@@ -9,9 +9,9 @@ import javax.sip.message.Response;
 import java.util.UUID;
 
 /**
- * Runs the SCAIP client: connects to the server (no TLS) and sends
+ * Runs the SCAIP client: connects to the server (UDP or TCP) and sends
  * spec-format SCAIP XML messages (short tags: ver, cid, dty, did, stc, ref, etc.);
- * prints response ref, snu, ste from body.
+ * prints response ref, snu, ste from body. Use stunnel for TLS to remote (see run-remote-client.sh).
  */
 public class ScaipClientMain {
 
@@ -26,7 +26,7 @@ public class ScaipClientMain {
         );
         String transport = System.getenv().getOrDefault("SCAIP_TRANSPORT", "udp");
 
-        System.out.println("SCAIP client connecting to " + serverHost + ":" + serverPort + " (" + transport + ", no TLS)");
+        System.out.println("SCAIP client connecting to " + serverHost + ":" + serverPort + " (" + transport + ")");
         System.out.println("Client listening on " + clientHost + ":" + clientPort);
         System.out.println();
 
@@ -93,6 +93,7 @@ public class ScaipClientMain {
         } finally {
             client.stop();
         }
+        System.exit(0);
     }
 
     private static void printScaipResponse(Response response) {
