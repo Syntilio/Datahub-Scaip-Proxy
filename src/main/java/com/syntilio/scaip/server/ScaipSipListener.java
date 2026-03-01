@@ -35,20 +35,8 @@ public class ScaipSipListener implements SipListener {
         String body = getBody(request);
         logService.logIncoming(body != null ? body : "");
 
-        String responseBody;
         String contentType = getRequestContentType(request);
-        if (!ScaipXml.CONTENT_TYPE.equalsIgnoreCase(contentType != null ? contentType.trim() : "")) {
-            responseBody = ScaipXml.buildNack(null, StatusNumber.INVALID_FORMAT, "Content-Type must be application/xml");
-        } else {
-            ScaipXml.ParseResult parsed = ScaipXml.parseRequest(body);
-            String ref = parsed.isOk() ? parsed.getRef() : ScaipXml.getRefFromRequestBody(body);
-            if (parsed.isOk()) {
-                logService.logEvent(parsed);
-                responseBody = ScaipXml.buildAck(ref);
-            } else {
-                responseBody = ScaipXml.buildNack(ref, StatusNumber.MANDATORY_TAG_MISSING, parsed.getReason());
-            }
-        }
+        String responseBody = buildResponseBody(body, contentType, logService);
 
         try {
             ServerTransaction serverTransaction = requestEvent.getServerTransaction();
@@ -64,6 +52,23 @@ public class ScaipSipListener implements SipListener {
         } catch (Exception e) {
             throw new RuntimeException("Failed to send SIP 200 OK", e);
         }
+    }
+
+    /**
+     * Builds the SCAIP response body for a given request body and Content-Type.
+     * Package-visible for unit testing without SIP mocks.
+     */
+    static String buildResponseBody(String body, String contentType, LogService logService) {
+        if (!ScaipXml.CONTENT_TYPE.equalsIgnoreCase(contentType != null ? contentType.trim() : "")) {
+            return ScaipXml.buildNack(null, StatusNumber.INVALID_FORMAT, "Content-Type must be application/xml");
+        }
+        ScaipXml.ParseResult parsed = ScaipXml.parseRequest(body);
+        String ref = parsed.isOk() ? parsed.getRef() : ScaipXml.getRefFromRequestBody(body);
+        if (parsed.isOk()) {
+            logService.logEvent(parsed);
+            return ScaipXml.buildAck(ref);
+        }
+        return ScaipXml.buildNack(ref, StatusNumber.MANDATORY_TAG_MISSING, parsed.getReason());
     }
 
     private static String getRequestContentType(Request request) {

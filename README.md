@@ -57,4 +57,4 @@ Production runs **Kamailio** as the edge (TCP 5060, TLS 5061), load-balancing to
 
 ## License
 
-Proprietary — Syntilio.
+Proprietary. Copyright (c) Syntilio b.v. See [LICENSE](LICENSE).
