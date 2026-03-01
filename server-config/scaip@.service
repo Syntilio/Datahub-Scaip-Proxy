@@ -8,7 +8,8 @@ Group=scaip
 WorkingDirectory=/opt/scaip/runtime
 Environment=SCAIP_HOST=0.0.0.0
 Environment=SCAIP_PORT=%i
-ExecStart=/usr/bin/java -jar /opt/scaip/runtime/app.jar
+# 5 backends share 3GB on a 4GB host: -Xmx600m each (3GB/5)
+ExecStart=/usr/bin/java -Xmx600m -Xms256m -jar /opt/scaip/runtime/app.jar
 Restart=always
 RestartSec=5
 

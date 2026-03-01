@@ -35,14 +35,16 @@ cp "$JAR" /opt/scaip/runtime/app.jar
 # So that User=scaip can run the service and write logs in /home/scaip
 chown -R scaip:scaip /opt/scaip/runtime
 
-echo "Installing systemd service (10 backends on 5062–5071)..."
+echo "Installing systemd service (5 backends on 5062–5066, 600MB heap each)..."
 cp server-config/scaip@.service /etc/systemd/system/scaip@.service
 systemctl daemon-reload
 # Replace single-instance scaip if it was previously installed
 systemctl stop scaip 2>/dev/null || true
 systemctl disable scaip 2>/dev/null || true
-systemctl enable scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066 scaip@5067 scaip@5068 scaip@5069 scaip@5070 scaip@5071
-systemctl start scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066 scaip@5067 scaip@5068 scaip@5069 scaip@5070 scaip@5071
+# Stop/disable any old backend instances beyond 5066 (e.g. when reducing from 10 to 5)
+for p in 5067 5068 5069 5070 5071; do systemctl stop scaip@$p 2>/dev/null || true; systemctl disable scaip@$p 2>/dev/null || true; done
+systemctl enable scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066
+systemctl start scaip@5062 scaip@5063 scaip@5064 scaip@5065 scaip@5066
 
 echo "Setting up TLS (Let's Encrypt or self-signed fallback)..."
 mkdir -p /etc/kamailio/certs
