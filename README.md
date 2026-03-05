@@ -1,6 +1,24 @@
-# SCAIP Server
+# SCAIP Proxy
 
 A SIP-based server and client for **SCAIP** (Social Care Alarm Internet Protocol), as in SIS SS 91100:2014 and CENELEC 50134-9. It receives SIP MESSAGE requests with SCAIP XML bodies, parses them, and responds with 200 OK and a short XML status.
+
+```mermaid
+flowchart LR
+    %% Main Setup
+    A[Alarm Device] -- "3/4G" --> B[VOIP Network]
+    B -- "SCAIP (VoIP)" --> C[SCAIP Proxy]
+    C -- "REST" --> D[Datahub]
+    D --> E[Carehub]
+
+    %% SCAIP Proxy Internal Flow (Kamailio load-balances over Java Message Forwarders)
+    subgraph Scaip_Proxy_Internal
+        C1[Kamailio] -- "VoIP" --> C2[Java Message Forwarder 1]
+        C1 -- "VoIP" --> C3[Java Message Forwarder 2]
+        C1 -- "VoIP" --> C4[Java Message Forwarder 3]
+    end
+
+    C --> C1
+```
 
 ## Requirements
 
