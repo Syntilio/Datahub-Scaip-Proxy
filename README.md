@@ -17,7 +17,7 @@ flowchart LR
         C1 -- "VoIP" --> C4[Java Message Forwarder 3]
     end
 
-    C --> C1
+    C -.- C1
 ```
 
 ## Requirements
