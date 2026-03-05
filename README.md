@@ -20,6 +20,22 @@ flowchart LR
     C -.- C1
 ```
 
+### Two tiered availability
+```mermaid
+flowchart LR
+    A[Alarm Device]
+
+    A -- "SCAIP (VOIP)" --> B[scaip-ams.syntilio.com]
+    A -- "SCAIP (VOIP)" --> C[scaip-fra.syntilio.com]
+    A -- "SCAIP (VOIP)" --> D[scaip-hel.syntilio.com]
+
+    B --> E[Datahub]
+    C --> E
+    D --> E
+
+    E --> F[Carehub]
+```
+
 ## Requirements
 
 - **Java 17**
