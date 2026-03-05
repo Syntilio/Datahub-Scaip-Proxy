@@ -1,9 +1,9 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.ScaipXml;
-import com.syntilio.scaip.enums.DeviceComponent;
-import com.syntilio.scaip.enums.DeviceType;
-import com.syntilio.scaip.enums.StatusCode;
+import com.syntilio.scaip.domain.DeviceComponent;
+import com.syntilio.scaip.domain.ScaipXml;
+import com.syntilio.scaip.domain.DeviceType;
+import com.syntilio.scaip.domain.StatusCode;
 
 import javax.sip.message.Response;
 import java.util.UUID;
@@ -11,14 +11,14 @@ import java.util.UUID;
 /**
  * Runs the SCAIP client: connects to the server (UDP or TCP) and sends
  * spec-format SCAIP XML messages (short tags: ver, cid, dty, did, stc, ref, etc.);
- * prints response ref, snu, ste from body. Use stunnel for TLS to remote (see run-remote-client.sh).
+ * prints response ref, snu, ste from body.
  */
 public class ScaipClientMain {
 
     public static void main(String[] args) throws Exception {
         String serverHost = System.getenv().getOrDefault("SCAIP_SERVER_HOST", "127.0.0.1");
         int serverPort = Integer.parseInt(
-            System.getenv().getOrDefault("SCAIP_SERVER_PORT", "5062")
+            System.getenv().getOrDefault("SCAIP_SERVER_PORT", "5060")
         );
         String clientHost = System.getenv().getOrDefault("SCAIP_CLIENT_HOST", "127.0.0.1");
         int clientPort = Integer.parseInt(

@@ -1,8 +1,8 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.enums.DeviceComponent;
-import com.syntilio.scaip.enums.DeviceType;
-import com.syntilio.scaip.enums.StatusCode;
+import com.syntilio.scaip.domain.DeviceComponent;
+import com.syntilio.scaip.domain.DeviceType;
+import com.syntilio.scaip.domain.StatusCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +29,7 @@ public class ScaipClientBenchmark {
     public static void main(String[] args) throws Exception {
         String serverHost = System.getenv().getOrDefault("SCAIP_SERVER_HOST", "127.0.0.1");
         int serverPort = Integer.parseInt(
-            System.getenv().getOrDefault("SCAIP_SERVER_PORT", "5062")
+            System.getenv().getOrDefault("SCAIP_SERVER_PORT", "5060")
         );
         String clientHost = System.getenv().getOrDefault("SCAIP_CLIENT_HOST", "127.0.0.1");
         String transport = System.getenv().getOrDefault("SCAIP_TRANSPORT", "udp");

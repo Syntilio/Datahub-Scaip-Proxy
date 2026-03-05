@@ -109,6 +109,14 @@
                             <mainClass>com.syntilio.scaip.client.ScaipClientBenchmark</mainClass>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>run-voic-peep</id>
+                        <phase>none</phase>
+                        <goals><goal>java</goal></goals>
+                        <configuration>
+                            <mainClass>com.syntilio.scaip.client.VoicPeepClientMain</mainClass>
+                        </configuration>
+                    </execution>
                 </executions>
                 <configuration>
                     <mainClass>com.syntilio.scaip.server.Main</mainClass>

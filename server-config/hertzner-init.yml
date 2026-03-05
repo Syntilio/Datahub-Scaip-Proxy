@@ -45,7 +45,7 @@ runcmd:
   - sysctl --system
   - systemctl enable ssh
   - systemctl restart ssh
-  - ufw allow from 20.79.29.146 to any port 22 proto tcp
+  - ufw allow 22/tcp
   - ufw allow 80/tcp
   - ufw allow 443/tcp
   - ufw allow 5060/tcp

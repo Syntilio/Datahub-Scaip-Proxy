@@ -1,4 +1,4 @@
-package com.syntilio.scaip.enums;
+package com.syntilio.scaip.domain;
 
 /**
  * SCAIP device type (dty). Common values; full list in SPEC.md.

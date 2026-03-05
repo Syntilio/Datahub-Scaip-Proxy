@@ -1,4 +1,4 @@
-package com.syntilio.scaip.enums;
+package com.syntilio.scaip.domain;
 
 import java.util.List;
 

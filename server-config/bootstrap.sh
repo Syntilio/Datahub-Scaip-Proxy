@@ -53,41 +53,40 @@ echo "Deploying landing page to /var/www/html..."
 mkdir -p /var/www/html
 cp -r server-config/www/* /var/www/html/ 2>/dev/null || true
 
-# Try Let's Encrypt (requires DNS for $DOMAIN to point to this server's fixed IP)
+# TLS: Let's Encrypt disabled; use self-signed for Kamailio. Apache runs HTTP only.
+# To re-enable Let's Encrypt + Apache HTTPS, uncomment the certbot block below and remove the self-signed block.
 systemctl stop apache2 2>/dev/null || true
-if certbot certonly --standalone \
-  --agree-tos \
-  --non-interactive \
-  -m "$LETSENCRYPT_EMAIL" \
-  -d "$DOMAIN"; then
-  echo "Let's Encrypt certificate obtained for $DOMAIN"
-  # Copy certs to /etc/kamailio/certs so kamailio user can read them (letsencrypt dir is root-only)
-  mkdir -p /etc/kamailio/certs
-  cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" /etc/kamailio/certs/
-  cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" /etc/kamailio/certs/
-  chown kamailio:kamailio /etc/kamailio/certs/fullchain.pem /etc/kamailio/certs/privkey.pem
-  chmod 644 /etc/kamailio/certs/fullchain.pem
-  chmod 640 /etc/kamailio/certs/privkey.pem
-  cp server-config/tls-letsencrypt.cfg /etc/kamailio/tls.cfg
-  mkdir -p /etc/letsencrypt/renewal-hooks/deploy
-  sed "s/__DOMAIN__/$DOMAIN/g" server-config/letsencrypt-restart-kamailio.sh > /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
-  chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
-  # Configure Apache for HTTPS and set global ServerName (suppresses AH00558)
-  a2enmod ssl 2>/dev/null || true
-  printf '%s\n' "ServerName $DOMAIN" > /etc/apache2/conf-available/syntilio.conf
-  a2enconf syntilio 2>/dev/null || true
-  sed "s/__DOMAIN__/$DOMAIN/g" server-config/apache-scaip-ssl.conf > /etc/apache2/sites-available/scaip-ssl.conf
-  a2ensite scaip-ssl.conf 2>/dev/null || true
-  systemctl reload apache2 2>/dev/null || true
-else
-  echo "Let's Encrypt failed (check DNS points $DOMAIN to this host). Using self-signed certificate."
-  openssl req -x509 -nodes -days 30 \
-    -newkey rsa:2048 \
-    -keyout /etc/kamailio/certs/self.key \
-    -out /etc/kamailio/certs/self.crt \
-    -subj "/CN=$DOMAIN"
-  cp server-config/tls-selfsigned.cfg /etc/kamailio/tls.cfg
-fi
+# if certbot certonly --standalone \
+#   --agree-tos \
+#   --non-interactive \
+#   -m "$LETSENCRYPT_EMAIL" \
+#   -d "$DOMAIN"; then
+#   echo "Let's Encrypt certificate obtained for $DOMAIN"
+#   mkdir -p /etc/kamailio/certs
+#   cp "/etc/letsencrypt/live/$DOMAIN/fullchain.pem" /etc/kamailio/certs/
+#   cp "/etc/letsencrypt/live/$DOMAIN/privkey.pem" /etc/kamailio/certs/
+#   chown kamailio:kamailio /etc/kamailio/certs/fullchain.pem /etc/kamailio/certs/privkey.pem
+#   chmod 644 /etc/kamailio/certs/fullchain.pem
+#   chmod 640 /etc/kamailio/certs/privkey.pem
+#   cp server-config/tls-letsencrypt.cfg /etc/kamailio/tls.cfg
+#   mkdir -p /etc/letsencrypt/renewal-hooks/deploy
+#   sed "s/__DOMAIN__/$DOMAIN/g" server-config/letsencrypt-restart-kamailio.sh > /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
+#   chmod +x /etc/letsencrypt/renewal-hooks/deploy/restart-kamailio.sh
+#   a2enmod ssl 2>/dev/null || true
+#   printf '%s\n' "ServerName $DOMAIN" > /etc/apache2/conf-available/syntilio.conf
+#   a2enconf syntilio 2>/dev/null || true
+#   sed "s/__DOMAIN__/$DOMAIN/g" server-config/apache-scaip-ssl.conf > /etc/apache2/sites-available/scaip-ssl.conf
+#   a2ensite scaip-ssl.conf 2>/dev/null || true
+#   systemctl reload apache2 2>/dev/null || true
+# else
+echo "Using self-signed certificate (Let's Encrypt disabled for Apache)."
+openssl req -x509 -nodes -days 30 \
+  -newkey rsa:2048 \
+  -keyout /etc/kamailio/certs/self.key \
+  -out /etc/kamailio/certs/self.crt \
+  -subj "/CN=$DOMAIN"
+cp server-config/tls-selfsigned.cfg /etc/kamailio/tls.cfg
+# fi
 systemctl start apache2 2>/dev/null || true
 
 cp server-config/kamailio.cfg /etc/kamailio/kamailio.cfg

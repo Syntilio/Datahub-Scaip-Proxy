@@ -1,8 +1,4 @@
-package com.syntilio.scaip;
-
-import com.syntilio.scaip.enums.RequestTag;
-import com.syntilio.scaip.enums.ResponseTag;
-import com.syntilio.scaip.enums.StatusNumber;
+package com.syntilio.scaip.domain;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

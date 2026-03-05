@@ -1,6 +1,6 @@
 package com.syntilio.scaip.server;
 
-import com.syntilio.scaip.ScaipXml;
+import com.syntilio.scaip.domain.ScaipXml;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;

@@ -1,6 +1,6 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.ScaipXml;
+import com.syntilio.scaip.domain.ScaipXml;
 
 import javax.sip.*;
 import javax.sip.address.*;
@@ -13,7 +13,6 @@ import java.util.concurrent.*;
 /**
  * SCAIP client that connects to the SCAIP SIP backend over UDP or TCP
  * and sends SIP MESSAGE requests with SCAIP message bodies.
- * For TLS to a remote server, use stunnel (see run-remote-client.sh).
  */
 public class ScaipClient implements SipListener {
 
@@ -21,6 +20,8 @@ public class ScaipClient implements SipListener {
     private final int serverPort;
     private final String clientHost;
     private final int clientPort;
+    /** When set, used in Via/From instead of clientHost (e.g. when behind NAT so the server can reach us). */
+    private final String advertisedHost;
     private final String transport;
 
     private SipStack sipStack;
@@ -32,11 +33,19 @@ public class ScaipClient implements SipListener {
     private final BlockingQueue<Response> responseQueue = new LinkedBlockingQueue<>();
 
     public ScaipClient(String serverHost, int serverPort, String clientHost, int clientPort, String transport) {
+        this(serverHost, serverPort, clientHost, clientPort, transport, null);
+    }
+
+    /**
+     * @param advertisedHost when non-null, used in Via and From instead of clientHost (e.g. your reachable IP when behind NAT)
+     */
+    public ScaipClient(String serverHost, int serverPort, String clientHost, int clientPort, String transport, String advertisedHost) {
         this.serverHost = serverHost;
         this.serverPort = serverPort;
         this.clientHost = clientHost;
         this.clientPort = clientPort;
         this.transport = transport != null ? transport.toLowerCase(Locale.ROOT) : "udp";
+        this.advertisedHost = (advertisedHost != null && !advertisedHost.trim().isEmpty()) ? advertisedHost.trim() : clientHost;
     }
 
     public void start() throws Exception {
@@ -77,7 +86,7 @@ public class ScaipClient implements SipListener {
         requestUri.setPort(serverPort);
 
         String fromTag = "client-" + UUID.randomUUID().toString().substring(0, 8);
-        Address fromAddress = addressFactory.createAddress("sip:client@" + clientHost + ":" + clientPort);
+        Address fromAddress = addressFactory.createAddress("sip:client@" + advertisedHost + ":" + clientPort);
         FromHeader fromHeader = headerFactory.createFromHeader(fromAddress, fromTag);
 
         Address toAddress = addressFactory.createAddress("sip:scaip@" + serverHost + ":" + serverPort);
@@ -90,7 +99,7 @@ public class ScaipClient implements SipListener {
         CSeqHeader cSeqHeader = headerFactory.createCSeqHeader(cSeq, Request.MESSAGE);
 
         String branchId = "z9hG4bK-" + UUID.randomUUID().toString().replace("-", "");
-        ViaHeader viaHeader = headerFactory.createViaHeader(clientHost, clientPort, transport, branchId);
+        ViaHeader viaHeader = headerFactory.createViaHeader(advertisedHost, clientPort, transport, branchId);
         List<ViaHeader> viaHeaders = new ArrayList<>();
         viaHeaders.add(viaHeader);
 

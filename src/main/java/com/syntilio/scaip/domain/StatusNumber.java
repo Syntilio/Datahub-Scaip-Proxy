@@ -1,4 +1,4 @@
-package com.syntilio.scaip.enums;
+package com.syntilio.scaip.domain;
 
 /**
  * SCAIP response status number (snu). Per spec: 0=OK, 1–7=error.

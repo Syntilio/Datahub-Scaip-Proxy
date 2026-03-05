@@ -1,6 +1,7 @@
 package com.syntilio.scaip;
 
-import com.syntilio.scaip.enums.StatusNumber;
+import com.syntilio.scaip.domain.ScaipXml;
+import com.syntilio.scaip.domain.StatusNumber;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 

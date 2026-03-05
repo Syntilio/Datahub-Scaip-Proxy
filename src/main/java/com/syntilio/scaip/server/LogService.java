@@ -1,6 +1,6 @@
 package com.syntilio.scaip.server;
 
-import com.syntilio.scaip.ScaipXml;
+import com.syntilio.scaip.domain.ScaipXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

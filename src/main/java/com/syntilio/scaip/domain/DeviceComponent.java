@@ -1,4 +1,4 @@
-package com.syntilio.scaip.enums;
+package com.syntilio.scaip.domain;
 
 /**
  * SCAIP device component (dco). Common values; full list in SPEC.md.

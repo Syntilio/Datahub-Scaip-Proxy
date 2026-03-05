@@ -37,6 +37,22 @@ mvn exec:java -q
 
 **Benchmark:** `./run-remote-client-benchmark.sh` or `./run-remote-client-benchmark.sh nossl` (same TLS vs TCP choice).
 
+### Voic peep test client (voice call + RTP peep)
+
+Test client that places a SIP voice call to a voic trunk (INVITE), sends a short peep tone as RTP PCMU, then hangs up (BYE). Useful for testing trunks that auto-answer and record.
+
+```bash
+./run-voic-peep.sh
+```
+
+Override trunk (and other options) with environment variables:
+
+```bash
+VOIC_TRUNK_HOST=192.168.1.10 VOIC_TRUNK_PORT=5060 VOIC_TRUNK_USER=voic ./run-voic-peep.sh
+```
+
+Or run via Maven: `mvn exec:java@run-voic-peep -q`. **Behind NAT:** the client auto-detects your local IP; many trunks still work because they send 200 OK to the request source. If the trunk must reach you (e.g. strict Via routing), set `VOIC_PUBLIC_HOST` to your public IP and forward SIP (5064) and RTP (10000) ports to the client host.
+
 ## Server deployment (production)
 
 Production runs **Kamailio** as the edge (TCP 5060, TLS 5061), load-balancing to multiple **Java SCAIP backends** on localhost (default: 5 backends on 5062–5066). Each backend is a separate JVM with a fixed heap (e.g. 600 MB when 3 GB is shared across 5 on a 4 GB host).

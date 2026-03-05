@@ -1,4 +1,4 @@
-package com.syntilio.scaip.enums;
+package com.syntilio.scaip.domain;
 
 /**
  * SCAIP status code (stc). Common values; full list in SPEC.md.
