@@ -1,4 +1,4 @@
-package com.syntilio.scaip.domain;
+package com.syntilio.scaip.enums;
 
 /**
  * SCAIP call handling (cha).

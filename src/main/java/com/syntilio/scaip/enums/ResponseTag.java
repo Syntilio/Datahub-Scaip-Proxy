@@ -1,4 +1,4 @@
-package com.syntilio.scaip.domain;
+package com.syntilio.scaip.enums;
 
 /**
  * SCAIP response XML tag names (short names per SPEC.md).

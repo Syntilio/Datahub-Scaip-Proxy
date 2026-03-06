@@ -1,5 +1,9 @@
 package com.syntilio.scaip.domain;
 
+import com.syntilio.scaip.enums.RequestTag;
+import com.syntilio.scaip.enums.ResponseTag;
+import com.syntilio.scaip.enums.StatusNumber;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -175,6 +179,34 @@ public final class ScaipXml {
         if (list.getLength() == 0) return null;
         String t = list.item(0).getTextContent();
         return t != null ? t.trim() : null;
+    }
+
+    /**
+     * Builds a SCAIP request XML body from a domain request model. Only non-null fields are included.
+     */
+    public static String buildRequest(ScaipRequest req) {
+        if (req == null) return "";
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<scaip>\n");
+        appendTag(sb, RequestTag.VER, req.getVer());
+        appendTag(sb, RequestTag.CID, req.getControllerId());
+        appendTag(sb, RequestTag.DTY, req.getDeviceType() != null ? req.getDeviceType().getCode() : null);
+        appendTag(sb, RequestTag.DID, req.getDeviceId());
+        appendTag(sb, RequestTag.DCO, req.getDeviceComponent() != null ? req.getDeviceComponent().getCode() : null);
+        appendTag(sb, RequestTag.STC, req.getStatusCode() != null ? req.getStatusCode().getCode() : null);
+        appendTag(sb, RequestTag.STT, req.getStatusText());
+        appendTag(sb, RequestTag.PRI, req.getPriority());
+        appendTag(sb, RequestTag.LCO, req.getLocationCode());
+        appendTag(sb, RequestTag.LTE, req.getLocationText());
+        appendTag(sb, RequestTag.REF, req.getRef());
+        sb.append("</scaip>");
+        return sb.toString();
+    }
+
+    private static void appendTag(StringBuilder sb, RequestTag tag, String value) {
+        if (value != null && !value.isEmpty()) {
+            sb.append("  <").append(tag.getTagName()).append(">").append(escape(value)).append("</").append(tag.getTagName()).append(">\n");
+        }
     }
 
     /**

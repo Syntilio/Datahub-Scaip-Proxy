@@ -1,9 +1,10 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.domain.DeviceComponent;
+import com.syntilio.scaip.domain.ScaipRequest;
 import com.syntilio.scaip.domain.ScaipXml;
-import com.syntilio.scaip.domain.DeviceType;
-import com.syntilio.scaip.domain.StatusCode;
+import com.syntilio.scaip.enums.DeviceComponent;
+import com.syntilio.scaip.enums.DeviceType;
+import com.syntilio.scaip.enums.StatusCode;
 
 import javax.sip.message.Response;
 import java.util.UUID;
@@ -35,58 +36,20 @@ public class ScaipClientMain {
 
         try {
             String ref1 = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            // 1. Valid SCAIP alarm (spec: cid, dty required; did, stc, ref optional but typical)
-            String alarm = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <scaip>
-                  <ver>01.00</ver>
-                  <cid>+123456</cid>
-                  <dty>%s</dty>
-                  <did>001d940cb800</did>
-                  <dco>%s</dco>
-                  <stc>%s</stc>
-                  <lco>021</lco>
-                  <lte>kitchen</lte>
-                  <pri>0</pri>
-                  <ref>%s</ref>
-                </scaip>""".formatted(
-                DeviceType.FIXED_TRIGGER.getCode(),
-                DeviceComponent.SWITCH_1.getCode(),
-                StatusCode.MANUAL_ALARM.getCode(),
-                ref1);
+            ScaipRequest alarmReq = ScaipRequest.alarm(ref1, DeviceType.FIXED_TRIGGER, DeviceComponent.SWITCH_1, StatusCode.MANUAL_ALARM);
             System.out.println("Sending: SCAIP alarm (cid=+123456, dty=" + DeviceType.FIXED_TRIGGER.getCode() + ", did=001d940cb800, stc=" + StatusCode.MANUAL_ALARM.getCode() + ")");
-            Response r1 = client.sendScaipXml(alarm);
+            Response r1 = client.sendScaipXml(ScaipXml.buildRequest(alarmReq));
             printScaipResponse(r1);
 
             String ref2 = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-            // 2. Valid SCAIP heartbeat / normal (mty=PI optional for heartbeat)
-            String heartbeat = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <scaip>
-                  <ver>01.00</ver>
-                  <cid>+123456</cid>
-                  <dty>%s</dty>
-                  <did>001d940cb800</did>
-                  <stc>%s</stc>
-                  <ref>%s</ref>
-                </scaip>""".formatted(
-                DeviceType.FIXED_TRIGGER.getCode(),
-                StatusCode.NORMAL_STATE.getCode(),
-                ref2);
+            ScaipRequest heartbeatReq = ScaipRequest.heartbeat(ref2, DeviceType.FIXED_TRIGGER, StatusCode.NORMAL_STATE);
             System.out.println("Sending: SCAIP heartbeat (stc=" + StatusCode.NORMAL_STATE.getCode() + " normal)");
-            Response r2 = client.sendScaipXml(heartbeat);
+            Response r2 = client.sendScaipXml(ScaipXml.buildRequest(heartbeatReq));
             printScaipResponse(r2);
 
-            // 3. Invalid SCAIP (missing required dty) -> expect NACK snu=7
-            String invalid = """
-                <?xml version="1.0" encoding="UTF-8"?>
-                <scaip>
-                  <cid>+123456</cid>
-                  <did>001d940cb800</did>
-                  <stc>%s</stc>
-                </scaip>""".formatted(StatusCode.MANUAL_ALARM.getCode());
+            ScaipRequest invalidReq = ScaipRequest.invalid(StatusCode.MANUAL_ALARM);
             System.out.println("Sending: Invalid SCAIP (missing dty) -> expect NACK");
-            Response r3 = client.sendScaipXml(invalid);
+            Response r3 = client.sendScaipXml(ScaipXml.buildRequest(invalidReq));
             printScaipResponse(r3);
 
             System.out.println("Done. All messages sent.");

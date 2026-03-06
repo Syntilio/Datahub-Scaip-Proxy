@@ -1,8 +1,9 @@
 package com.syntilio.scaip.server;
 
-import com.syntilio.scaip.domain.ScaipXml;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.syntilio.scaip.domain.ScaipXml;
 
 public class LogService {
 

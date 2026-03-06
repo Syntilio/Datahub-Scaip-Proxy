@@ -10,9 +10,6 @@ public class Main {
         ScaipSipServer server = new ScaipSipServer(host, port);
         server.start();
 
-        int workers = Integer.parseInt(
-            System.getenv().getOrDefault("SCAIP_WORKERS", "10")
-        );
-        System.out.println("SCAIP SIP backend started on " + host + ":" + port + " (UDP/TCP), " + workers + " workers");
+        System.out.println("SCAIP SIP backend started on " + host + ":" + port + " (UDP/TCP)");
     }
 }

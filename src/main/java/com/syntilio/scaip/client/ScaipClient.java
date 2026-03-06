@@ -1,11 +1,12 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.domain.ScaipXml;
-
 import javax.sip.*;
 import javax.sip.address.*;
 import javax.sip.header.*;
 import javax.sip.message.*;
+
+import com.syntilio.scaip.domain.ScaipXml;
+
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;

@@ -1,7 +1,7 @@
 package com.syntilio.scaip.server;
 
 import com.syntilio.scaip.domain.ScaipXml;
-import com.syntilio.scaip.domain.StatusNumber;
+import com.syntilio.scaip.enums.StatusNumber;
 
 import javax.sip.*;
 import javax.sip.header.ContentTypeHeader;

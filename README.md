@@ -51,12 +51,13 @@ Produces `target/scaip-server-1.0.0.jar` (fat jar with server and client).
 
 ## Run locally
 
-**Server** (single backend on 5062):
+**Server** (listens on 127.0.0.1:5060, UDP/TCP):
 
 ```bash
-mvn exec:java -q
-# or: java -jar target/scaip-server-1.0.0.jar
+./run-local-server.sh
 ```
+
+Or run manually: `mvn exec:java -q` or `java -jar target/scaip-server-1.0.0.jar` (default port 5060; override with `SCAIP_HOST`, `SCAIP_PORT`).
 
 **Client** against local server:
 
@@ -66,10 +67,15 @@ mvn exec:java -q
 
 ## Run client against remote server
 
-- **TCP (no TLS):** `./run-remote-client.sh nossl` — connects to `scaip.syntilio.com:5060` (override with `SCAIP_SERVER_HOST` / `SCAIP_SERVER_PORT`).
-- **TLS:** `./run-remote-client.sh` — uses local stunnel to `scaip.syntilio.com:5061` (requires `stunnel` and `server-config/stunnel-client-scaip.conf`).
+**UDP** to remote server (default `scaip.syntilio.com:5060`):
 
-**Benchmark:** `./run-remote-client-benchmark.sh` or `./run-remote-client-benchmark.sh nossl` (same TLS vs TCP choice).
+```bash
+./run-remote-client.sh
+```
+
+Override host/port with `SCAIP_SERVER_HOST` and `SCAIP_SERVER_PORT`.
+
+**Benchmark:** `./run-remote-client-benchmark.sh` (same env vars).
 
 ### Voic peep test client (voice call + RTP peep)
 
@@ -89,10 +95,10 @@ Or run via Maven: `mvn exec:java@run-voic-peep -q`. **Behind NAT:** the client a
 
 ## Server deployment (production)
 
-Production runs **Kamailio** as the edge (TCP 5060, TLS 5061), load-balancing to multiple **Java SCAIP backends** on localhost (default: 5 backends on 5062–5066). Each backend is a separate JVM with a fixed heap (e.g. 600 MB when 3 GB is shared across 5 on a 4 GB host).
+Production runs **Kamailio** as the edge (UDP/TCP 5060; TLS 5061 with self-signed cert), load-balancing to multiple **Java SCAIP backends** on localhost (default: 5 backends on 5062–5066). Each backend is a separate JVM with a fixed heap (e.g. 600 MB when 3 GB is shared across 5 on a 4 GB host).
 
 1. **Provision** a host (e.g. Hetzner) and use `server-config/hertzner-init.yml` as cloud-init user data, or clone the repo and run the bootstrap manually.
-2. **Bootstrap:** `server-config/bootstrap.sh` — builds the project, installs systemd units for the backends, Kamailio, TLS (Let’s Encrypt), and Apache.
+2. **Bootstrap:** `server-config/bootstrap.sh` — builds the project, installs systemd units for the backends, Kamailio (with self-signed TLS), and Apache (HTTP only; Let's Encrypt is disabled by default).
 3. **Config:** Copy `server-config/kamailio.cfg` and `server-config/dispatcher.list` to the server (e.g. `/etc/kamailio/`) and restart Kamailio.
 4. **DNS:** Point your domain’s A record at the server IP; optionally add SRV records so clients can discover the SIP port (see [server-config/DNS-SRV.md](server-config/DNS-SRV.md)).
 

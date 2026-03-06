@@ -1,8 +1,10 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.domain.DeviceComponent;
-import com.syntilio.scaip.domain.DeviceType;
-import com.syntilio.scaip.domain.StatusCode;
+import com.syntilio.scaip.domain.ScaipRequest;
+import com.syntilio.scaip.domain.ScaipXml;
+import com.syntilio.scaip.enums.DeviceComponent;
+import com.syntilio.scaip.enums.DeviceType;
+import com.syntilio.scaip.enums.StatusCode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,9 +46,11 @@ public class ScaipClientBenchmark {
         System.out.println("Runs: " + runs + " with " + numThreads + " clients in parallel (alarm + heartbeat + invalid per run)");
         System.out.println();
 
-        String alarm = buildAlarm();
-        String heartbeat = buildHeartbeat();
-        String invalid = buildInvalid();
+        String alarm = ScaipXml.buildRequest(ScaipRequest.alarm(
+            randomRef(), DeviceType.FIXED_TRIGGER, DeviceComponent.SWITCH_1, StatusCode.MANUAL_ALARM));
+        String heartbeat = ScaipXml.buildRequest(ScaipRequest.heartbeat(
+            randomRef(), DeviceType.FIXED_TRIGGER, StatusCode.NORMAL_STATE));
+        String invalid = ScaipXml.buildRequest(ScaipRequest.invalid(StatusCode.MANUAL_ALARM));
 
         AtomicInteger errors = new AtomicInteger(0);
         AtomicInteger completed = new AtomicInteger(0);
@@ -109,52 +113,7 @@ public class ScaipClientBenchmark {
         System.exit(0);
     }
 
-    private static String buildAlarm() {
-        String ref = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-        return """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <scaip>
-              <ver>01.00</ver>
-              <cid>+123456</cid>
-              <dty>%s</dty>
-              <did>001d940cb800</did>
-              <dco>%s</dco>
-              <stc>%s</stc>
-              <lco>021</lco>
-              <lte>kitchen</lte>
-              <pri>0</pri>
-              <ref>%s</ref>
-            </scaip>""".formatted(
-            DeviceType.FIXED_TRIGGER.getCode(),
-            DeviceComponent.SWITCH_1.getCode(),
-            StatusCode.MANUAL_ALARM.getCode(),
-            ref);
-    }
-
-    private static String buildHeartbeat() {
-        String ref = UUID.randomUUID().toString().replace("-", "").substring(0, 16);
-        return """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <scaip>
-              <ver>01.00</ver>
-              <cid>+123456</cid>
-              <dty>%s</dty>
-              <did>001d940cb800</did>
-              <stc>%s</stc>
-              <ref>%s</ref>
-            </scaip>""".formatted(
-            DeviceType.FIXED_TRIGGER.getCode(),
-            StatusCode.NORMAL_STATE.getCode(),
-            ref);
-    }
-
-    private static String buildInvalid() {
-        return """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <scaip>
-              <cid>+123456</cid>
-              <did>001d940cb800</did>
-              <stc>%s</stc>
-            </scaip>""".formatted(StatusCode.MANUAL_ALARM.getCode());
+    private static String randomRef() {
+        return UUID.randomUUID().toString().replace("-", "").substring(0, 16);
     }
 }
