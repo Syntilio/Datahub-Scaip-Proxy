@@ -75,7 +75,11 @@ public class ScaipSipListener implements SipListener {
             }
             return ScaipXml.buildNack(ref, StatusNumber.NOT_TREATED, "Forward failed");
         }
-        return ScaipXml.buildNack(ref, StatusNumber.MANDATORY_TAG_MISSING, parsed.getReason());
+        // Per SCAIP spec: snu=7 only for missing required tags (cid, dty); snu=2 for invalid format (empty, malformed XML, wrong root)
+        StatusNumber nackCode = parsed.getReason() != null && parsed.getReason().startsWith("Missing required")
+            ? StatusNumber.MANDATORY_TAG_MISSING
+            : StatusNumber.INVALID_FORMAT;
+        return ScaipXml.buildNack(ref, nackCode, parsed.getReason());
     }
 
     private static String getRequestContentType(Request request) {

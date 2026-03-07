@@ -72,17 +72,25 @@ class ScaipSipListenerTest {
     }
 
     @Test
-    void buildResponseBody_returnsNackForInvalidXmlMissingClosingTag() {
+    void buildResponseBody_returnsNackSnu2ForInvalidXmlMissingClosingTag() {
         String body = "<?xml version=\"1.0\"?><scaip><ref>r1</ref><cid>c</cid><dty>d</dty>";
-        // Missing closing </scaip> causes parse failure
+        // Missing closing </scaip> causes parse failure -> snu=2 (Invalid format) per SCAIP spec
         String responseBody = ScaipSipListener.buildResponseBody(body, "application/xml", LOG_SERVICE, null);
 
         assertNotNull(responseBody);
         assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
-        assertTrue(responseBody.contains("<snu>7</snu>"));
+        assertTrue(responseBody.contains("<snu>2</snu>"));
         String ste = ScaipXml.parseResponseStatusText(responseBody);
         assertNotNull(ste);
         assertTrue(ste.contains("Invalid XML"), "status_text should indicate invalid XML: " + ste);
+    }
+
+    @Test
+    void buildResponseBody_returnsNackSnu2ForEmptyBody() {
+        String responseBody = ScaipSipListener.buildResponseBody("", "application/xml", LOG_SERVICE, null);
+        assertNotNull(responseBody);
+        assertTrue(responseBody.contains("<snu>2</snu>"));
+        assertTrue(ScaipXml.parseResponseStatusText(responseBody).contains("Empty"));
     }
 
     @Test
