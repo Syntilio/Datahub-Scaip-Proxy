@@ -21,5 +21,9 @@ public class LogService {
         logger.info("SCAIP event: ref={} cid={} did={} dty={} stc={} lco={} lte={} pri={}",
             event.getRef(), event.getControllerId(), event.getDeviceId(), event.getDeviceType(), event.getStatusCode(),
             event.getLocationCode(), event.getLocationText(), event.getPriority());
+        String jsonEcho = ScaipXml.toJsonEcho(event);
+        if (jsonEcho != null) {
+            logger.info("SCAIP advance echo (human-readable JSON): {}", jsonEcho);
+        }
     }
 }

@@ -256,4 +256,57 @@ class ScaipXmlTest {
             assertNull(r.getRef());
         }
     }
+
+    @Nested
+    class ToJsonEcho {
+        @Test
+        void returnsNullForNullOrFailedParse() {
+            assertNull(ScaipXml.toJsonEcho(null));
+            assertNull(ScaipXml.toJsonEcho(ScaipXml.ParseResult.failure("bad")));
+        }
+
+        @Test
+        void usesHumanReadableKeysNotAbbreviatedTags() {
+            ScaipXml.ParseResult parsed = ScaipXml.parseRequest(MINIMAL_VALID_REQUEST);
+            assertTrue(parsed.isOk());
+            String json = ScaipXml.toJsonEcho(parsed);
+            assertNotNull(json);
+            // Abbreviated tags must not appear as keys
+            assertFalse(json.contains("\"ref\":"));
+            assertFalse(json.contains("\"cid\":"));
+            assertFalse(json.contains("\"dty\":"));
+            assertFalse(json.contains("\"did\":"));
+            // Human-readable keys must appear
+            assertTrue(json.contains("\"reference\":"));
+            assertTrue(json.contains("\"controller_id\":"));
+            assertTrue(json.contains("\"device_type\":"));
+            assertTrue(json.contains("\"device_id\":"));
+            assertTrue(json.contains("\"location_code\":"));
+            assertTrue(json.contains("\"location_text\":"));
+        }
+
+        @Test
+        void includesOnlyNonEmptyValues() {
+            ScaipXml.ParseResult parsed = ScaipXml.parseRequest(MINIMAL_VALID_REQUEST);
+            String json = ScaipXml.toJsonEcho(parsed);
+            assertNotNull(json);
+            assertTrue(json.contains("\"reference\":\"req-123\""));
+            assertTrue(json.contains("\"controller_id\":\"controller-1\""));
+            assertTrue(json.contains("\"device_type\":\"device-type-a\""));
+            assertTrue(json.contains("\"device_id\":\"dev-1\""));
+            assertTrue(json.contains("\"location_text\":\"loc text\""));
+        }
+
+        @Test
+        void escapesQuotesAndBackslashInValues() {
+            ScaipXml.ParseResult parsed = ScaipXml.ParseResult.success(
+                "ref\"quote", "1", "c", "d", null, null, null, null,
+                "did", null, "text\\slash", null, null, null, null,
+                null, null, null, null, null, null);
+            String json = ScaipXml.toJsonEcho(parsed);
+            assertNotNull(json);
+            assertTrue(json.contains("\\\\"));
+            assertTrue(json.contains("\\\""));
+        }
+    }
 }

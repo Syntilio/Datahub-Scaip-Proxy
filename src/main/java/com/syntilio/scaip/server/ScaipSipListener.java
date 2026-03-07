@@ -14,6 +14,7 @@ import java.nio.charset.StandardCharsets;
 public class ScaipSipListener implements SipListener {
 
     private final LogService logService = new LogService();
+    private final JsonForwarder forwarder = new JsonForwarder();
     private MessageFactory messageFactory;
     private HeaderFactory headerFactory;
 
@@ -36,7 +37,7 @@ public class ScaipSipListener implements SipListener {
         logService.logIncoming(body != null ? body : "");
 
         String contentType = getRequestContentType(request);
-        String responseBody = buildResponseBody(body, contentType, logService);
+        String responseBody = buildResponseBody(body, contentType, logService, forwarder);
 
         try {
             ServerTransaction serverTransaction = requestEvent.getServerTransaction();
@@ -56,9 +57,11 @@ public class ScaipSipListener implements SipListener {
 
     /**
      * Builds the SCAIP response body for a given request body and Content-Type.
+     * When the message is valid, forwards the JSON representation to the configured endpoint,
+     * waits for the response, and only returns ACK if the forward returns 2xx.
      * Package-visible for unit testing without SIP mocks.
      */
-    static String buildResponseBody(String body, String contentType, LogService logService) {
+    static String buildResponseBody(String body, String contentType, LogService logService, JsonForwarder forwarder) {
         if (!ScaipXml.CONTENT_TYPE.equalsIgnoreCase(contentType != null ? contentType.trim() : "")) {
             return ScaipXml.buildNack(null, StatusNumber.INVALID_FORMAT, "Content-Type must be application/xml");
         }
@@ -66,7 +69,11 @@ public class ScaipSipListener implements SipListener {
         String ref = parsed.isOk() ? parsed.getRef() : ScaipXml.getRefFromRequestBody(body);
         if (parsed.isOk()) {
             logService.logEvent(parsed);
-            return ScaipXml.buildAck(ref);
+            String json = ScaipXml.toJsonEcho(parsed);
+            if (forwarder == null || forwarder.forward(json)) {
+                return ScaipXml.buildAck(ref);
+            }
+            return ScaipXml.buildNack(ref, StatusNumber.NOT_TREATED, "Forward failed");
         }
         return ScaipXml.buildNack(ref, StatusNumber.MANDATORY_TAG_MISSING, parsed.getReason());
     }
