@@ -11,10 +11,7 @@ public class LogService {
             LoggerFactory.getLogger(LogService.class);
 
     public void logIncoming(String message) {
-        logger.info("=================================");
-        logger.info("SCAIP MESSAGE RECEIVED");
-        logger.info("{}", message);
-        logger.info("=================================");
+        logger.info("SCAIP MESSAGE RECEIVED: {}", message);
     }
 
     public void logEvent(ScaipXml.ParseResult event) {

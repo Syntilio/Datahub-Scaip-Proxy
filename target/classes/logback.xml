@@ -1,4 +1,7 @@
 <configuration>
+    <!-- Rollbar access token: set ROLLBAR_ACCESS_TOKEN (or scaip.rollbar.accessToken) to enable centralized logging -->
+    <property name="ROLLBAR_TOKEN" value="${ROLLBAR_ACCESS_TOKEN:-${scaip.rollbar.accessToken:-}}"/>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level %msg%n</pattern>
@@ -19,8 +22,17 @@
         </encoder>
     </appender>
 
+    <!-- Rollbar: send WARN and ERROR to centralized logging when token is set -->
+    <appender name="ROLLBAR" class="com.rollbar.logback.RollbarAppender">
+        <accessToken>${ROLLBAR_TOKEN}</accessToken>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+    </appender>
+
     <root level="INFO">
         <appender-ref ref="CONSOLE"/>
         <appender-ref ref="FILE"/>
+        <appender-ref ref="ROLLBAR"/>
     </root>
 </configuration>
