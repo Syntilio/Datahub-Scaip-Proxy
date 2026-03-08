@@ -25,5 +25,6 @@
 /Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/JsonForwarder.java
 /Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/LogService.java
 /Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/Main.java
+/Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/ParsedRequest.java
 /Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/ScaipSipListener.java
 /Users/jaapstelwagen/Documents/Github/scaip/src/main/java/com/syntilio/scaip/server/ScaipSipServer.java
