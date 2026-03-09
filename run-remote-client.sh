@@ -6,7 +6,7 @@ cd "$(dirname "$0")"
 
 export SCAIP_TRANSPORT=udp
 export SCAIP_SERVER_HOST="${SCAIP_SERVER_HOST:-scaip.syntilio.com}"
-export SCAIP_SERVER_PORT="${SCAIP_SERVER_PORT:-5062}"
+export SCAIP_SERVER_PORT="${SCAIP_SERVER_PORT:-5060}"
 # Use 0.0.0.0 so the server can send responses back to us
 export SCAIP_CLIENT_HOST=0.0.0.0
 

@@ -49,6 +49,7 @@ runcmd:
   - ufw allow 80/tcp
   - ufw allow 443/tcp
   - ufw allow 5060/tcp
+  - ufw allow 5060/udp
   - ufw allow 5061/tcp
   - ufw --force enable
   - mkdir -p /opt

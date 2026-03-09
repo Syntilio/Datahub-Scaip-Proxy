@@ -31,6 +31,10 @@ if [ -z "$JAR" ] || [ ! -f "$JAR" ]; then
 fi
 
 mkdir -p /opt/scaip/runtime
+touch /opt/scaip/secrets/scaip.env
+chmod 600 /etc/scaip/secrets.env
+chown scaip:scaip /etc/scaip/secrets.env
+
 cp "$JAR" /opt/scaip/runtime/app.jar
 # So that User=scaip can run the service and write logs in /home/scaip
 chown -R scaip:scaip /opt/scaip/runtime
