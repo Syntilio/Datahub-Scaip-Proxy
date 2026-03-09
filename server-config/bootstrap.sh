@@ -92,6 +92,22 @@ systemctl start apache2 2>/dev/null || true
 cp server-config/kamailio.cfg /etc/kamailio/kamailio.cfg
 cp server-config/dispatcher.list /etc/kamailio/dispatcher.list
 
+echo "Configuring rsyslog for Kamailio..."
+mkdir -p /var/log/kamailio
+touch /var/log/kamailio/kamailio-errors.log
+touch /var/log/kamailio/kamailio-calls.log
+chmod 0644 /var/log/kamailio/kamailio-errors.log /var/log/kamailio/kamailio-calls.log
+chown -R syslog:adm /var/log/kamailio
+
+cat > /etc/rsyslog.d/10-kamailio.conf <<'EOF'
+local0.err    /var/log/kamailio/kamailio-errors.log
+local0.info   -/var/log/kamailio/kamailio-calls.log
+& stop
+EOF
+
+systemctl restart rsyslog
+echo "Configuration done rsyslog for Kamailio..."
+
 # So systemd tracks Kamailio after it daemonizes (Type=forking + PIDFile)
 mkdir -p /etc/systemd/system/kamailio.service.d
 cp server-config/kamailio.service.d/override.conf /etc/systemd/system/kamailio.service.d/override.conf
