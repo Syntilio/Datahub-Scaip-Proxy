@@ -6,6 +6,7 @@ After=network.target
 User=scaip
 Group=scaip
 WorkingDirectory=/opt/scaip/runtime
+EnvironmentFile=/opt/scaip/secrets/scaip.env
 Environment=SCAIP_HOST=0.0.0.0
 Environment=SCAIP_PORT=%i
 # 5 backends share 3GB on a 4GB host: -Xmx600m each (3GB/5)
