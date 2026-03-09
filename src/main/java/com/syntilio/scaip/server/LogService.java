@@ -11,15 +11,16 @@ public class LogService {
             LoggerFactory.getLogger(LogService.class);
 
     public void logIncoming(String message) {
-        logger.info("=================================");
-        logger.info("SCAIP MESSAGE RECEIVED");
-        logger.info("{}", message);
-        logger.info("=================================");
+        logger.info("SCAIP MESSAGE RECEIVED: {}", message);
     }
 
     public void logEvent(ScaipXml.ParseResult event) {
         logger.info("SCAIP event: ref={} cid={} did={} dty={} stc={} lco={} lte={} pri={}",
             event.getRef(), event.getControllerId(), event.getDeviceId(), event.getDeviceType(), event.getStatusCode(),
             event.getLocationCode(), event.getLocationText(), event.getPriority());
+        String jsonEcho = ScaipXml.toJsonEcho(event);
+        if (jsonEcho != null) {
+            logger.info("SCAIP advance echo (human-readable JSON): {}", jsonEcho);
+        }
     }
 }

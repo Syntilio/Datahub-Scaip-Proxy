@@ -1,6 +1,6 @@
 # SCAIP protocol (XML, spec format)
 
-SCAIP (Social Care Alarm Internet Protocol) is a SIP-based protocol for alarm and notification events, standardised in **SIS SS 91100:2014** and **CENELEC 50134-9**. Messages are carried in the body of SIP MESSAGE requests/responses and use **XML**. This implementation follows the format defined in **SPEC.md** (short XML tags and status-number response).
+SCAIP (Social Care Alarm Internet Protocol) is a SIP-based protocol for alarm and notification events, standardised in **SIS SS 91100:2014** and **CENELEC 50134-9**. Messages are carried in the body of SIP MESSAGE requests/responses and use **XML**. This implementation uses short XML tag names and numeric status responses (snu) as defined below and in the standards.
 
 ## Transport
 
@@ -21,7 +21,7 @@ The body of the SIP MESSAGE is XML (`Content-Type: application/xml`) with root `
 | `mty` | No | Message type (see table below). |
 | `hbo` | No | Heartbeat options (see table below). |
 | `did` | No | Device identifier. |
-| `dco` | No | Device component (see SPEC.md for full list). |
+| `dco` | No | Device component (see standards for full list). |
 | `dte` | No | Device text. |
 | `crd` | No | Caller ID (default sip:). |
 | `stc` | No | Status code (see table below for common values). |
@@ -80,7 +80,7 @@ The body of the SIP MESSAGE is XML (`Content-Type: application/xml`) with root `
 | `0045` | Controller       |
 | `0048` | Local unit       |
 
-(Full list in SPEC.md.)
+(Full list in the standards.)
 
 **Status code (`stc`) — common values:**
 
@@ -92,7 +92,7 @@ The body of the SIP MESSAGE is XML (`Content-Type: application/xml`) with root `
 | `0092` | Automatic reset |
 | `0093` | Manual reset  |
 
-(Full list in SPEC.md.)
+(Full list in the standards.)
 
 ### Example request
 

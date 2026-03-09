@@ -14,6 +14,10 @@ class ScaipSipListenerTest {
 
     private static final LogService LOG_SERVICE = new LogService();
 
+    private ScaipSipListener listenerWithForwarder(JsonForwarder forwarder) {
+        return new ScaipSipListener(LOG_SERVICE, forwarder);
+    }
+
     private static final String MINIMAL_VALID_BODY =
         "<?xml version=\"1.0\"?><scaip><ref>r1</ref><cid>c</cid><dty>d</dty>"
             + "<sco></sco><cha></cha><mty></mty><hbo></hbo><did></did><dco></dco><dte></dte>"
@@ -22,7 +26,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_returnsAckForValidXmlWithApplicationXmlContentType() {
-        String responseBody = ScaipSipListener.buildResponseBody(MINIMAL_VALID_BODY, "application/xml", LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
 
         assertNotNull(responseBody);
         assertTrue(responseBody.contains("<ref>r1</ref>"));
@@ -32,7 +36,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_returnsNackWhenContentTypeIsNotApplicationXml() {
-        String responseBody = ScaipSipListener.buildResponseBody(MINIMAL_VALID_BODY, "text/plain", LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "text/plain");
 
         assertNotNull(responseBody);
         assertTrue(responseBody.contains("<snu>2</snu>"));
@@ -41,7 +45,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_returnsNackWhenContentTypeIsNull() {
-        String responseBody = ScaipSipListener.buildResponseBody(MINIMAL_VALID_BODY, null, LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, null);
 
         assertNotNull(responseBody);
         assertTrue(responseBody.contains("<snu>2</snu>"));
@@ -49,7 +53,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_acceptsContentTypeWithWhitespace() {
-        String responseBody = ScaipSipListener.buildResponseBody(MINIMAL_VALID_BODY, "  application/xml  ", LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "  application/xml  ");
 
         assertTrue(responseBody.contains("<snu>0</snu>"));
     }
@@ -57,7 +61,7 @@ class ScaipSipListenerTest {
     @Test
     void buildResponseBody_returnsNackWhenRequiredTagMissing() {
         String body = "<?xml version=\"1.0\"?><scaip><ref>r1</ref><cid>c</cid></scaip>";
-        String responseBody = ScaipSipListener.buildResponseBody(body, "application/xml", LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(body, "application/xml");
 
         assertTrue(responseBody.contains("<snu>7</snu>"));
         assertTrue(responseBody.contains("Missing required") || responseBody.contains("dty"));
@@ -66,8 +70,57 @@ class ScaipSipListenerTest {
     @Test
     void buildResponseBody_echoesRefInNackWhenParseFails() {
         String body = "<?xml version=\"1.0\"?><scaip><ref>my-ref</ref><cid>c</cid></scaip>";
-        String responseBody = ScaipSipListener.buildResponseBody(body, "application/xml", LOG_SERVICE);
+        String responseBody = listenerWithForwarder(null).buildResponseBody(body, "application/xml");
 
         assertTrue(responseBody.contains("<ref>my-ref</ref>"));
+    }
+
+    @Test
+    void buildResponseBody_returnsNackSnu2ForInvalidXmlMissingClosingTag() {
+        String body = "<?xml version=\"1.0\"?><scaip><ref>r1</ref><cid>c</cid><dty>d</dty>";
+        // Missing closing </scaip> causes parse failure -> snu=2 (Invalid format) per SCAIP spec
+        String responseBody = listenerWithForwarder(null).buildResponseBody(body, "application/xml");
+
+        assertNotNull(responseBody);
+        assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
+        assertTrue(responseBody.contains("<snu>2</snu>"));
+        String ste = ScaipXml.parseResponseStatusText(responseBody);
+        assertNotNull(ste);
+        assertTrue(ste.contains("Invalid XML"), "status_text should indicate invalid XML: " + ste);
+    }
+
+    @Test
+    void buildResponseBody_returnsNackSnu2ForEmptyBody() {
+        String responseBody = listenerWithForwarder(null).buildResponseBody("", "application/xml");
+        assertNotNull(responseBody);
+        assertTrue(responseBody.contains("<snu>2</snu>"));
+        assertTrue(ScaipXml.parseResponseStatusText(responseBody).contains("Empty"));
+    }
+
+    @Test
+    void buildResponseBody_returnsNackWhenForwarderFails() {
+        JsonForwarder failingForwarder = new JsonForwarder() {
+            @Override
+            public boolean forward(String json) {
+                return false;
+            }
+        };
+        String responseBody = listenerWithForwarder(failingForwarder).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
+
+        assertNotNull(responseBody);
+        assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
+        assertTrue(responseBody.contains("<snu>5</snu>"));
+        assertTrue(responseBody.contains("Forward failed"));
+    }
+
+    @Test
+    void buildResponseBody_returnsNackWhenSimulateNon200() {
+        JsonForwarder simulateNon200Forwarder = new JsonForwarder("https://httpbin.org/post", 10, true);
+        String responseBody = listenerWithForwarder(simulateNon200Forwarder).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
+
+        assertNotNull(responseBody);
+        assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
+        assertEquals("5", ScaipXml.parseResponseStatusNumber(responseBody));
+        assertTrue(ScaipXml.parseResponseStatusText(responseBody).contains("Forward failed"));
     }
 }

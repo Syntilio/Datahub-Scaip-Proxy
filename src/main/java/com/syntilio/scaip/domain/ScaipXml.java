@@ -182,6 +182,70 @@ public final class ScaipXml {
     }
 
     /**
+     * Advance echo: converts a successful parse result to JSON with human-readable keys
+     * (e.g. reference, controller_id, device_type) instead of abbreviated XML tags.
+     * Only non-null, non-empty values are included. Returns null if parsed is not ok.
+     */
+    public static String toJsonEcho(ParseResult parsed) {
+        if (parsed == null || !parsed.isOk()) return null;
+        StringBuilder sb = new StringBuilder();
+        sb.append('{');
+        boolean first = true;
+        first = appendJson(sb, RequestTag.REF.getFullName(), parsed.getRef(), first);
+        first = appendJson(sb, RequestTag.VER.getFullName(), parsed.getVer(), first);
+        first = appendJson(sb, RequestTag.CID.getFullName(), parsed.getControllerId(), first);
+        first = appendJson(sb, RequestTag.DTY.getFullName(), parsed.getDeviceType(), first);
+        first = appendJson(sb, RequestTag.SCO.getFullName(), parsed.getSystemConfig(), first);
+        first = appendJson(sb, RequestTag.CHA.getFullName(), parsed.getCallHandling(), first);
+        first = appendJson(sb, RequestTag.MTY.getFullName(), parsed.getMessageType(), first);
+        first = appendJson(sb, RequestTag.HBO.getFullName(), parsed.getHeartbeatOptions(), first);
+        first = appendJson(sb, RequestTag.DID.getFullName(), parsed.getDeviceId(), first);
+        first = appendJson(sb, RequestTag.DCO.getFullName(), parsed.getDeviceComponent(), first);
+        first = appendJson(sb, RequestTag.DTE.getFullName(), parsed.getDeviceText(), first);
+        first = appendJson(sb, RequestTag.CRD.getFullName(), parsed.getCallerId(), first);
+        first = appendJson(sb, RequestTag.STC.getFullName(), parsed.getStatusCode(), first);
+        first = appendJson(sb, RequestTag.STT.getFullName(), parsed.getStatusText(), first);
+        first = appendJson(sb, RequestTag.PRI.getFullName(), parsed.getPriority(), first);
+        first = appendJson(sb, RequestTag.LCO.getFullName(), parsed.getLocationCode(), first);
+        first = appendJson(sb, RequestTag.LVA.getFullName(), parsed.getLocationValue(), first);
+        first = appendJson(sb, RequestTag.LTE.getFullName(), parsed.getLocationText(), first);
+        first = appendJson(sb, RequestTag.ICO.getFullName(), parsed.getInfoCode(), first);
+        first = appendJson(sb, RequestTag.ITE.getFullName(), parsed.getInfoText(), first);
+        first = appendJson(sb, RequestTag.AME.getFullName(), parsed.getAdditionalMessage(), first);
+        sb.append('}');
+        return sb.toString();
+    }
+
+    private static boolean appendJson(StringBuilder sb, String key, String value, boolean first) {
+        if (value == null || value.isEmpty()) return first;
+        if (!first) sb.append(',');
+        sb.append('"').append(escapeJson(key)).append("\":\"").append(escapeJson(value)).append('"');
+        return false;
+    }
+
+    private static String escapeJson(String s) {
+        if (s == null) return "";
+        StringBuilder sb = new StringBuilder(s.length());
+        for (int i = 0; i < s.length(); i++) {
+            char c = s.charAt(i);
+            switch (c) {
+                case '"' -> sb.append("\\\"");
+                case '\\' -> sb.append("\\\\");
+                case '\b' -> sb.append("\\b");
+                case '\f' -> sb.append("\\f");
+                case '\n' -> sb.append("\\n");
+                case '\r' -> sb.append("\\r");
+                case '\t' -> sb.append("\\t");
+                default -> {
+                    if (c < ' ') sb.append(String.format("\\u%04x", (int) c));
+                    else sb.append(c);
+                }
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
      * Builds a SCAIP request XML body from a domain request model. Only non-null fields are included.
      */
     public static String buildRequest(ScaipRequest req) {

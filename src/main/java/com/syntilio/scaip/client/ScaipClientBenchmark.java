@@ -1,11 +1,5 @@
 package com.syntilio.scaip.client;
 
-import com.syntilio.scaip.domain.ScaipRequest;
-import com.syntilio.scaip.domain.ScaipXml;
-import com.syntilio.scaip.enums.DeviceComponent;
-import com.syntilio.scaip.enums.DeviceType;
-import com.syntilio.scaip.enums.StatusCode;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -16,10 +10,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Runs the SCAIP client performance test: many iterations of the standard
- * message set (alarm, heartbeat, invalid). Uses 3 client threads in parallel.
+ * message set (alarm, heartbeat, invalid) using hardcoded XML (no POJO).
+ * Uses multiple client threads in parallel.
  * <p>
- * Env: SCAIP_SERVER_HOST, SCAIP_SERVER_PORT, SCAIP_CLIENT_HOST, SCAIP_RUNS (default 100),
- * SCAIP_THREADS (default 3).
+ * Env: SCAIP_SERVER_HOST, SCAIP_SERVER_PORT, SCAIP_CLIENT_HOST, SCAIP_RUNS (default 50),
+ * SCAIP_THREADS (default 1).
  */
 public class ScaipClientBenchmark {
 
@@ -43,14 +38,13 @@ public class ScaipClientBenchmark {
         );
 
         System.out.println("SCAIP benchmark: " + serverHost + ":" + serverPort + " (" + transport + ")");
-        System.out.println("Runs: " + runs + " with " + numThreads + " clients in parallel (alarm + heartbeat + invalid per run)");
+        System.out.println("Runs: " + runs + " with " + numThreads + " clients in parallel (alarm + heartbeat + invalid + invalid XML per run)");
         System.out.println();
 
-        String alarm = ScaipXml.buildRequest(ScaipRequest.alarm(
-            randomRef(), DeviceType.FIXED_TRIGGER, DeviceComponent.SWITCH_1, StatusCode.MANUAL_ALARM));
-        String heartbeat = ScaipXml.buildRequest(ScaipRequest.heartbeat(
-            randomRef(), DeviceType.FIXED_TRIGGER, StatusCode.NORMAL_STATE));
-        String invalid = ScaipXml.buildRequest(ScaipRequest.invalid(StatusCode.MANUAL_ALARM));
+        String alarm = ScaipSampleXml.alarmWithRef(randomRef());
+        String heartbeat = ScaipSampleXml.heartbeatWithRef(randomRef());
+        String invalidMissingDty = ScaipSampleXml.INVALID_MISSING_DTY;
+        String invalidMalformedXml = ScaipSampleXml.INVALID_MALFORMED_XML;
 
         AtomicInteger errors = new AtomicInteger(0);
         AtomicInteger completed = new AtomicInteger(0);
@@ -72,11 +66,11 @@ public class ScaipClientBenchmark {
                         client.start();
                         if (client.sendScaipXml(alarm) == null) errors.addAndGet(1);
                         if (client.sendScaipXml(heartbeat) == null) errors.addAndGet(1);
-                        if (client.sendScaipXml(invalid) == null) errors.addAndGet(1);
+                        if (client.sendScaipXml(invalidMissingDty) == null) errors.addAndGet(1);
+                        if (client.sendScaipXml(invalidMalformedXml) == null) errors.addAndGet(1);
                     } catch (Exception e) {
-                        errors.addAndGet(3);
+                        errors.addAndGet(4);
                     } finally {
-                        // Let stack finish processing responses before stopping (avoids "SIP Stack Timer has been stopped")
                         try { Thread.sleep(150); } catch (InterruptedException ignored) { Thread.currentThread().interrupt(); }
                         client.stop();
                     }
