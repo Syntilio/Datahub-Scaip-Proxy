@@ -25,9 +25,9 @@ flowchart LR
 flowchart LR
     A[Alarm Device]
 
-    A -- "SCAIP (VOIP)" --> B[scaip-ams.syntilio.com]
-    A -- "SCAIP (VOIP)" --> C[scaip-fra.syntilio.com]
-    A -- "SCAIP (VOIP)" --> D[scaip-hel.syntilio.com]
+    A -- "SCAIP (VoIP)" --> B[scaip-nuremberg.syntilio.com]
+    A -- "SCAIP (VoIP)" --> C[scaip-falkenstein.syntilio.com]
+    A -- "SCAIP (VoIP)" --> D[scaip-helsinki.syntilio.com]
 
     B --> E[Datahub]
     C --> E
