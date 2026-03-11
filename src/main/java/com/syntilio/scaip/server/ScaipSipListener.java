@@ -40,22 +40,37 @@ public class ScaipSipListener implements SipListener {
             return;
         }
         String body = getBody(request);
-        logService.logIncoming(body != null ? body : "");
+        if (body == null) {
+            log.error("Request body is null (method={}, requestUri={})", request.getMethod(), request.getRequestURI());
+            return;
+        }
+        logService.logIncoming(body);
         String contentType = getRequestContentType(request);
         ParsedRequest parsed = parseAndValidate(body, contentType);
+
         String responseBody;
         if (parsed.hasNack()) {
             responseBody = parsed.getNackBody();
         } else {
             logService.logEvent(parsed.getParseResult());
-            boolean forwarded = forwarder == null || forwarder.forward(parsed.getJson());
-            if (!forwarded) {
-                log.warn("SCAIP message could not be forwarded (ref={}); sending NACK", parsed.getRef());
+            if (forwarder == null) {
+                log.error("Forwarder is null; cannot forward (ref={})", parsed.getRef());
+                responseBody = ScaipXml.buildNack(parsed.getRef(), StatusNumber.NOT_TREATED, "Forwarder not configured");
+            } else {
+                boolean forwarded = forwarder.forward(parsed.getJson());
+                if (forwarded) {
+                    log.info("SCAIP message forwarded (ref={})", parsed.getRef());
+                    responseBody = ScaipXml.buildAck(parsed.getRef());
+                } else {
+                    log.warn("SCAIP message could not be forwarded (ref={}); sending NACK", parsed.getRef());
+                    responseBody = ScaipXml.buildNack(parsed.getRef(), StatusNumber.NOT_TREATED, "Forward failed");
+                }
             }
-            responseBody = forwarded
-                ? ScaipXml.buildAck(parsed.getRef())
-                : ScaipXml.buildNack(parsed.getRef(), StatusNumber.NOT_TREATED, "Forward failed");
         }
+        sendOkResponse(requestEvent, request, responseBody);
+    }
+
+    private void sendOkResponse(RequestEvent requestEvent, Request request, String responseBody) {
         try {
             ServerTransaction serverTransaction = getOrCreateServerTransaction(requestEvent, request);
             Response response = createOkResponseWithBody(request, responseBody);
@@ -122,7 +137,10 @@ public class ScaipSipListener implements SipListener {
             return parsed.getNackBody();
         }
         logService.logEvent(parsed.getParseResult());
-        boolean forwarded = forwarder == null || forwarder.forward(parsed.getJson());
+        if (forwarder == null) {
+            return ScaipXml.buildNack(parsed.getRef(), StatusNumber.NOT_TREATED, "Forwarder not configured");
+        }
+        boolean forwarded = forwarder.forward(parsed.getJson());
         if (!forwarded) {
             log.warn("SCAIP message could not be forwarded (ref={}); sending NACK", parsed.getRef());
         }

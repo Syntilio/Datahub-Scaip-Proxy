@@ -19,7 +19,6 @@ import java.time.Duration;
  * <ul>
  *   <li>{@code scaip.forward.url} / {@code SCAIP_FORWARD_URL} – endpoint URL (default: https://httpbin.org/post)</li>
  *   <li>{@code scaip.forward.timeoutSeconds} / {@code SCAIP_FORWARD_TIMEOUT_SECONDS} – timeout in seconds (default: 10)</li>
- *   <li>{@code scaip.forward.simulateNon200} / {@code SCAIP_FORWARD_SIMULATE_NON200} – if "true", no request is sent and forward returns false (for testing NACK flow)</li>
  * </ul>
  * If {@code scaip.forward.url} is empty/blank, {@link #forward(String)} returns true without sending (no-op).
  * To simulate a non-2xx response via a real endpoint, use e.g. {@code https://httpbin.org/status/500}.
@@ -39,31 +38,19 @@ public class JsonForwarder {
         return defaultValue != null ? defaultValue : "";
     }
 
-    private static boolean getSimulateNon200() {
-        String v = getConfig("scaip.forward.simulateNon200", "SCAIP_FORWARD_SIMULATE_NON200", "");
-        return "true".equalsIgnoreCase(v);
-    }
-
     private final String url;
     private final int timeoutSeconds;
-    private final boolean simulateNon200;
     private final HttpClient client;
 
     public JsonForwarder() {
         this(getConfig("scaip.forward.url", "SCAIP_FORWARD_URL", DEFAULT_URL),
-             parseIntOrDefault(getConfig("scaip.forward.timeoutSeconds", "SCAIP_FORWARD_TIMEOUT_SECONDS", ""), DEFAULT_TIMEOUT_SECONDS),
-             getSimulateNon200());
+             parseIntOrDefault(getConfig("scaip.forward.timeoutSeconds", "SCAIP_FORWARD_TIMEOUT_SECONDS", ""), DEFAULT_TIMEOUT_SECONDS));
     }
 
     public JsonForwarder(String url, int timeoutSeconds) {
-        this(url, timeoutSeconds, false);
-    }
-
-    public JsonForwarder(String url, int timeoutSeconds, boolean simulateNon200) {
         this.url = url != null ? url.trim() : "";
         this.timeoutSeconds = Math.max(1, timeoutSeconds);
-        this.simulateNon200 = simulateNon200;
-        this.client = this.url.isEmpty() || this.simulateNon200
+        this.client = this.url.isEmpty()
             ? null
             : HttpClient.newBuilder()
                 .connectTimeout(Duration.ofSeconds(Math.min(this.timeoutSeconds, 5)))
@@ -80,10 +67,6 @@ public class JsonForwarder {
     public boolean forward(String json) {
         if (url.isEmpty()) {
             return true;
-        }
-        if (simulateNon200) {
-            log.info("JsonForwarder: simulateNon200=true -> returning false (NACK flow)");
-            return false;
         }
         if (json == null) {
             log.warn("JsonForwarder: null JSON, skipping forward");

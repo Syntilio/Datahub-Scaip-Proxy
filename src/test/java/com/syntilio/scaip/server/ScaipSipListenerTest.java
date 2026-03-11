@@ -18,6 +18,14 @@ class ScaipSipListenerTest {
         return new ScaipSipListener(LOG_SERVICE, forwarder);
     }
 
+    /** No-op forwarder for tests that need valid parse → ACK without real HTTP. */
+    private static final JsonForwarder NO_OP_ACK_FORWARDER = new JsonForwarder() {
+        @Override
+        public boolean forward(String json) {
+            return true;
+        }
+    };
+
     private static final String MINIMAL_VALID_BODY =
         "<?xml version=\"1.0\"?><scaip><ref>r1</ref><cid>c</cid><dty>d</dty>"
             + "<sco></sco><cha></cha><mty></mty><hbo></hbo><did></did><dco></dco><dte></dte>"
@@ -26,7 +34,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_returnsAckForValidXmlWithApplicationXmlContentType() {
-        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
+        String responseBody = listenerWithForwarder(NO_OP_ACK_FORWARDER).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
 
         assertNotNull(responseBody);
         assertTrue(responseBody.contains("<ref>r1</ref>"));
@@ -53,7 +61,7 @@ class ScaipSipListenerTest {
 
     @Test
     void buildResponseBody_acceptsContentTypeWithWhitespace() {
-        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "  application/xml  ");
+        String responseBody = listenerWithForwarder(NO_OP_ACK_FORWARDER).buildResponseBody(MINIMAL_VALID_BODY, "  application/xml  ");
 
         assertTrue(responseBody.contains("<snu>0</snu>"));
     }
@@ -114,9 +122,23 @@ class ScaipSipListenerTest {
     }
 
     @Test
-    void buildResponseBody_returnsNackWhenSimulateNon200() {
-        JsonForwarder simulateNon200Forwarder = new JsonForwarder("https://httpbin.org/post", 10, true);
-        String responseBody = listenerWithForwarder(simulateNon200Forwarder).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
+    void buildResponseBody_returnsNackWhenForwarderIsNull() {
+        String responseBody = listenerWithForwarder(null).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
+        assertNotNull(responseBody);
+        assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
+        assertTrue(responseBody.contains("<snu>5</snu>"));
+        assertTrue(responseBody.contains("Forwarder not configured"));
+    }
+
+    @Test
+    void buildResponseBody_returnsNackWhenForwardReturnsFalse() {
+        JsonForwarder failingForwarder = new JsonForwarder() {
+            @Override
+            public boolean forward(String json) {
+                return false;
+            }
+        };
+        String responseBody = listenerWithForwarder(failingForwarder).buildResponseBody(MINIMAL_VALID_BODY, "application/xml");
 
         assertNotNull(responseBody);
         assertEquals("NACK", ScaipXml.parseResponseResult(responseBody));
