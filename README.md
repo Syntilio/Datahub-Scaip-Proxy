@@ -105,7 +105,6 @@ Production runs **Kamailio** as the edge (UDP/TCP 5060; TLS 5061 with self-signe
 
 | Doc | Description |
 |-----|-------------|
-| [ARCHITECTURE.md](ARCHITECTURE.md) | High-level flow: Kamailio → Java backends → logs |
 | [SCAIP_PROTOCOL.md](SCAIP_PROTOCOL.md) | SCAIP XML format, tags, and transport |
 | [SCALING.md](SCALING.md) | Changing the number of backends and Java heap |
 | [server-config/DNS-SRV.md](server-config/DNS-SRV.md) | DNS SRV records for SIP/SIPS discovery |
