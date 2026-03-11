@@ -25,9 +25,6 @@
     <!-- Rollbar: send WARN and ERROR to centralized logging when token is set -->
     <appender name="ROLLBAR" class="com.rollbar.logback.RollbarAppender">
         <accessToken>${ROLLBAR_TOKEN}</accessToken>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>WARN</level>
-        </filter>
     </appender>
 
     <root level="INFO">
